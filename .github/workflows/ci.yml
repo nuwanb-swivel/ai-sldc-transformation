@@ -26,6 +26,7 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://teampulse:teampulse@localhost:1999/teampulse
+      BETTER_AUTH_SECRET: ci-only-placeholder-secret-not-sensitive
 
     steps:
       - uses: actions/checkout@v4
@@ -43,14 +44,14 @@ jobs:
       - name: Typecheck + build
         run: npm run build
 
-      # TODO(db-migrate): uncomment once Drizzle + a committed schema/migrations exist (AD-9, ARCHITECTURE-SPINE.md § Deployment & Environments)
-      # - name: Run migrations
-      #   run: npm run db:migrate
+      - name: Run migrations
+        run: npm run db:migrate
 
-      # TODO(vitest): uncomment once Vitest is installed and `test:integration` is wired (AGENTS.md Definition of Done)
-      # - name: Integration tests
-      #   run: npm run test:integration
+      - name: Integration tests
+        run: npm run test:integration
 
-      # TODO(playwright): uncomment once Playwright is installed and `test:e2e` is wired (AGENTS.md Definition of Done)
-      # - name: E2E tests
-      #   run: npm run test:e2e
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E tests
+        run: npm run test:e2e

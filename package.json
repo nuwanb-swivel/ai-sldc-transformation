@@ -1,12 +1,15 @@
 {
-  "name": "teampulse-tmp",
+  "name": "teampulse",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "board": "paneo dev",
+    "board:validate": "paneo validate",
+    "board:export": "paneo export"
   },
   "dependencies": {
     "next": "16.3.6",
@@ -14,6 +17,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@swiveltech/paneo": "^0.5.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

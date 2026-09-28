@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TeamPulse — Add Idea Overlay (key screen)</title>
+<style>
+/*
+  Governs: DESIGN.md Elevation & Depth (add-idea-overlay shadow-md), Shapes
+  (rounded.lg overlay, rounded.md inputs/button), Components (add-idea-overlay,
+  input — 48px height/border-default/border-focus brand-primary/focus-ring,
+  button-primary — disabled vs enabled), Typography (heading, label, body,
+  caption for helper text).
+  EXPERIENCE.md Information Architecture (Add Idea — persistent action, reachable
+  from list and detail, opens as overlay/sheet on mobile), Component Patterns
+  (Add Idea overlay — two required fields, submit disabled until both non-empty),
+  State Patterns (Idea submitted — overlay closes, new idea appears at top, no
+  toast), Interaction Primitives (tap outside/swipe down to dismiss if empty),
+  Key Flow 1 steps 2-3 (Priya taps Add Idea, overlay opens, types title +
+  description, taps Submit).
+*/
+:root{
+  --brand-primary:#5B5CF6;
+  --brand-primary-hover:#4B4CE6;
+  --text-primary:#111318;
+  --text-secondary:#5F636D;
+  --text-muted:#8B909A;
+  --text-disabled:#B5B8C0;
+  --text-inverse:#FFFFFF;
+  --bg-page:#FFFFFF;
+  --bg-subtle:#F7F8FA;
+  --bg-muted:#F1F2F5;
+  --border-light:#EAEBEF;
+  --border-default:#DADCE2;
+  --radius-md:10px; --radius-lg:16px;
+  --focus-ring:0 0 0 3px rgba(91,92,246,0.20);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  padding:40px 16px;
+  background:#EDEEF2;
+  font-family:"Inter","Helvetica Neue",Arial,sans-serif;
+  display:flex;
+  flex-wrap:wrap;
+  gap:32px;
+  justify-content:center;
+  align-items:flex-start;
+}
+.section-label{
+  width:390px;
+  font-size:14px;
+  font-weight:600;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  margin-bottom:8px;
+}
+.phone{
+  width:390px;
+  border-radius:40px;
+  background:#0B0C0F;
+  padding:10px;
+  box-shadow:0 24px 48px rgba(16,18,24,0.28);
+}
+.screen{
+  background:var(--bg-subtle);
+  border-radius:30px;
+  overflow:hidden;
+  min-height:760px;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+}
+.status-bar{ height:28px; display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--text-muted); }
+.backdrop-list{
+  padding:8px 20px;
+  opacity:0.35;
+}
+.backdrop-list h1{
+  font-size:32px; font-weight:600; color:var(--text-primary); margin:0 0 16px;
+}
+.backdrop-card{
+  height:64px;
+  background:var(--bg-page);
+  border:1px solid var(--border-light);
+  border-radius:16px;
+  margin-bottom:12px;
+}
+.sheet{
+  margin-top:auto;
+  background:var(--bg-page);
+  border-radius:16px 16px 0 0;
+  box-shadow:0 12px 32px rgba(16,18,24,0.08);
+  padding:20px 20px 28px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.sheet-handle{
+  width:36px; height:4px;
+  background:var(--border-default);
+  border-radius:9999px;
+  margin:0 auto 4px;
+}
+.sheet h2{
+  font-size:20px; font-weight:600; color:var(--text-primary); margin:0;
+}
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.field label{
+  font-size:14px; font-weight:500; color:var(--text-primary);
+}
+.field input, .field textarea{
+  font-family:inherit;
+  font-size:16px;
+  color:var(--text-primary);
+  border:1px solid var(--border-default);
+  border-radius:var(--radius-md);
+  padding:12px 14px;
+  background:var(--bg-page);
+  outline:none;
+}
+.field input{ height:48px; }
+.field textarea{ height:88px; resize:none; line-height:1.6; }
+.field input.focused, .field textarea.focused{
+  border-color:var(--brand-primary);
+  box-shadow:var(--focus-ring);
+}
+.submit-btn{
+  height:48px;
+  border-radius:var(--radius-md);
+  border:none;
+  font-size:16px;
+  font-weight:500;
+  cursor:default;
+}
+.submit-btn.disabled{
+  background:var(--bg-muted);
+  color:var(--text-disabled);
+}
+.submit-btn.enabled{
+  background:var(--brand-primary);
+  color:var(--text-inverse);
+  cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div>
+  <div class="section-label">State 1 — Submit disabled (fields empty)</div>
+  <div class="phone">
+    <div class="screen">
+      <div class="status-bar">9:41</div>
+      <div class="backdrop-list">
+        <h1>Ideas</h1>
+        <div class="backdrop-card"></div>
+        <div class="backdrop-card"></div>
+        <div class="backdrop-card"></div>
+      </div>
+      <div class="sheet">
+        <div class="sheet-handle"></div>
+        <h2>Add Idea</h2>
+        <div class="field">
+          <label for="t1">Title</label>
+          <input id="t1" type="text" placeholder="Short, specific title" />
+        </div>
+        <div class="field">
+          <label for="d1">Description</label>
+          <textarea id="d1" placeholder="What's the idea? What problem does it solve?"></textarea>
+        </div>
+        <button class="submit-btn disabled" disabled>Submit idea</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <div class="section-label">State 2 — Submit enabled (both fields filled)</div>
+  <div class="phone">
+    <div class="screen">
+      <div class="status-bar">9:41</div>
+      <div class="backdrop-list">
+        <h1>Ideas</h1>
+        <div class="backdrop-card"></div>
+        <div class="backdrop-card"></div>
+        <div class="backdrop-card"></div>
+      </div>
+      <div class="sheet">
+        <div class="sheet-handle"></div>
+        <h2>Add Idea</h2>
+        <div class="field">
+          <label for="t2">Title</label>
+          <input id="t2" class="focused" type="text" value="Add a quiet room on the 3rd floor" />
+        </div>
+        <div class="field">
+          <label for="d2">Description</label>
+          <textarea id="d2">People keep taking calls in the kitchen. A small quiet room with two desks would fix most of it and doesn't need new furniture, just an empty office repurposed.</textarea>
+        </div>
+        <button class="submit-btn enabled">Submit idea</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

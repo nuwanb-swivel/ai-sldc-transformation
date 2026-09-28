@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: teampulse
+          POSTGRES_PASSWORD: teampulse
+          POSTGRES_DB: teampulse
+        ports:
+          - 1999:5432
+        options: >-
+          --health-cmd "pg_isready -U teampulse -d teampulse"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+
+    env:
+      DATABASE_URL: postgresql://teampulse:teampulse@localhost:1999/teampulse
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck + build
+        run: npm run build
+
+      # TODO(db-migrate): uncomment once Drizzle + a committed schema/migrations exist (AD-9, ARCHITECTURE-SPINE.md § Deployment & Environments)
+      # - name: Run migrations
+      #   run: npm run db:migrate
+
+      # TODO(vitest): uncomment once Vitest is installed and `test:integration` is wired (AGENTS.md Definition of Done)
+      # - name: Integration tests
+      #   run: npm run test:integration
+
+      # TODO(playwright): uncomment once Playwright is installed and `test:e2e` is wired (AGENTS.md Definition of Done)
+      # - name: E2E tests
+      #   run: npm run test:e2e

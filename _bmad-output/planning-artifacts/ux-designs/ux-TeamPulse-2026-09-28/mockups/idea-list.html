@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TeamPulse — Idea List (key screen)</title>
+<style>
+/*
+  Governs: DESIGN.md Colors (status colors + tint pairs, brand-primary-light),
+  Typography (display, heading, label, caption), Layout & Spacing (page-padding-mobile,
+  content-gap, spacing.4), Elevation & Depth (add-idea-fab shadow), Shapes (rounded.lg,
+  rounded.full), Components (idea-card, status-badge-*, upvote-control /
+  upvote-control-active, add-idea-fab).
+  EXPERIENCE.md Information Architecture (Idea list surface), Component Patterns
+  (Idea card, Upvote control), State Patterns (Cold-load N/A here / Empty list),
+  Voice and Tone ("No ideas yet. Be the first to add one."), Key Flow 1 step 4-5
+  (New badge + 0 upvotes on submit; Under Review + upvotes days later), Key Flow 2
+  step 2 (Admin scans by upvote count — this same list, no admin-only affordance
+  visible here since status changes happen in detail).
+*/
+:root{
+  --brand-primary:#5B5CF6;
+  --brand-primary-hover:#4B4CE6;
+  --brand-primary-light:#EEEEFF;
+  --brand-primary-subtle:#F7F7FF;
+  --text-primary:#111318;
+  --text-secondary:#5F636D;
+  --text-muted:#8B909A;
+  --text-inverse:#FFFFFF;
+  --bg-page:#FFFFFF;
+  --bg-subtle:#F7F8FA;
+  --bg-muted:#F1F2F5;
+  --border-light:#EAEBEF;
+  --success:#20A66A; --success-bg:#EAF8F1;
+  --warning:#E8A317; --warning-bg:#FFF7E5;
+  --info:#4C7FF0; --info-bg:#EEF3FF;
+  --radius-sm:6px; --radius-md:10px; --radius-lg:16px; --radius-full:9999px;
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-6:24px; --sp-8:32px;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  padding:40px 16px;
+  background:#EDEEF2;
+  font-family:"Inter","Helvetica Neue",Arial,sans-serif;
+  display:flex;
+  flex-wrap:wrap;
+  gap:32px;
+  justify-content:center;
+  align-items:flex-start;
+}
+.section-label{
+  width:390px;
+  font-size:14px;
+  font-weight:600;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  margin-bottom:8px;
+}
+.phone{
+  width:390px;
+  border-radius:40px;
+  background:#0B0C0F;
+  padding:10px;
+  box-shadow:0 24px 48px rgba(16,18,24,0.28);
+}
+.screen{
+  background:var(--bg-page);
+  border-radius:30px;
+  overflow:hidden;
+  min-height:760px;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+}
+.status-bar{
+  height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  color:var(--text-muted);
+}
+.app-header{
+  padding:8px 20px 16px;
+}
+.app-header h1{
+  margin:0;
+  font-size:32px;
+  font-weight:600;
+  line-height:1.2;
+  letter-spacing:-0.02em;
+  color:var(--text-primary);
+}
+.list{
+  flex:1;
+  padding:0 20px 100px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  overflow-y:auto;
+}
+.idea-card{
+  background:var(--bg-page);
+  border:1px solid var(--border-light);
+  border-radius:var(--radius-lg);
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.card-title{
+  font-size:20px;
+  font-weight:600;
+  line-height:1.2;
+  color:var(--text-primary);
+}
+.card-meta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.status-badge{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 12px;
+  border-radius:var(--radius-full);
+  font-size:14px;
+  font-weight:500;
+  line-height:1.4;
+}
+.status-badge.new{ background:var(--bg-muted); color:var(--text-secondary); }
+.status-badge.review{ background:var(--warning-bg); color:var(--warning); }
+.status-badge.planned{ background:var(--info-bg); color:var(--info); }
+.status-badge.done{ background:var(--success-bg); color:var(--success); }
+.upvote{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 14px;
+  border-radius:var(--radius-full);
+  background:var(--bg-muted);
+  color:var(--text-secondary);
+  font-size:12px;
+  font-weight:400;
+  line-height:1.4;
+  border:none;
+  cursor:pointer;
+}
+.upvote.active{
+  background:var(--brand-primary-light);
+  color:var(--brand-primary);
+}
+.upvote svg{ width:12px; height:12px; }
+.fab{
+  position:absolute;
+  right:20px;
+  bottom:24px;
+  background:var(--brand-primary);
+  color:var(--text-inverse);
+  border:none;
+  border-radius:var(--radius-full);
+  padding:14px 22px;
+  font-size:16px;
+  font-weight:500;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  box-shadow:0 4px 12px rgba(16,18,24,0.06);
+  cursor:pointer;
+}
+.fab svg{ width:16px; height:16px; }
+.empty-state{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+  padding:0 40px 100px;
+  text-align:center;
+}
+.empty-state p{
+  margin:0;
+  font-size:16px;
+  line-height:1.6;
+  color:var(--text-secondary);
+}
+.empty-fab{
+  background:var(--brand-primary);
+  color:var(--text-inverse);
+  border:none;
+  border-radius:var(--radius-md);
+  height:48px;
+  padding:0 24px;
+  font-size:16px;
+  font-weight:500;
+  cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div>
+  <div class="section-label">State 1 — Populated list</div>
+  <div class="phone">
+    <div class="screen">
+      <div class="status-bar">9:41</div>
+      <div class="app-header"><h1>Ideas</h1></div>
+      <div class="list">
+
+        <div class="idea-card">
+          <div class="card-title">Move retro notes to Confluence</div>
+          <div class="card-meta">
+            <span class="status-badge new">New</span>
+            <button class="upvote" aria-label="Upvote — 2, not yet upvoted">
+              <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 1l5 6H8v4H4V7H1z"/></svg>
+              2
+            </button>
+          </div>
+        </div>
+
+        <div class="idea-card">
+          <div class="card-title">Standing desk budget for the whole floor</div>
+          <div class="card-meta">
+            <span class="status-badge review">Under Review</span>
+            <button class="upvote active" aria-label="Upvoted — 14">
+              <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 1l5 6H8v4H4V7H1z"/></svg>
+              14
+            </button>
+          </div>
+        </div>
+
+        <div class="idea-card">
+          <div class="card-title">Add a quiet room on the 3rd floor</div>
+          <div class="card-meta">
+            <span class="status-badge planned">Planned</span>
+            <button class="upvote" aria-label="Upvote — 9, not yet upvoted">
+              <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 1l5 6H8v4H4V7H1z"/></svg>
+              9
+            </button>
+          </div>
+        </div>
+
+        <div class="idea-card">
+          <div class="card-title">Faster VPN for remote days</div>
+          <div class="card-meta">
+            <span class="status-badge done">Done</span>
+            <button class="upvote active" aria-label="Upvoted — 21">
+              <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 1l5 6H8v4H4V7H1z"/></svg>
+              21
+            </button>
+          </div>
+        </div>
+
+        <div class="idea-card">
+          <div class="card-title">Free parking for early arrivals</div>
+          <div class="card-meta">
+            <span class="status-badge new">New</span>
+            <button class="upvote" aria-label="Upvote — 0, not yet upvoted">
+              <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 1l5 6H8v4H4V7H1z"/></svg>
+              0
+            </button>
+          </div>
+        </div>
+
+        <div class="idea-card">
+          <div class="card-title">Weekly all-hands recording archive</div>
+          <div class="card-meta">
+            <span class="status-badge review">Under Review</span>
+            <button class="upvote" aria-label="Upvote — 5, not yet upvoted">
+              <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 1l5 6H8v4H4V7H1z"/></svg>
+              5
+            </button>
+          </div>
+        </div>
+
+      </div>
+      <button class="fab" aria-label="Add Idea">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v12M2 8h12"/></svg>
+        Add Idea
+      </button>
+    </div>
+  </div>
+</div>
+
+<div>
+  <div class="section-label">State 2 — Empty list</div>
+  <div class="phone">
+    <div class="screen">
+      <div class="status-bar">9:41</div>
+      <div class="app-header"><h1>Ideas</h1></div>
+      <div class="empty-state">
+        <p>No ideas yet. Be the first to add one.</p>
+        <button class="empty-fab">Add Idea</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

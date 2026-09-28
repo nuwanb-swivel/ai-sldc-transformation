@@ -1,0 +1,41 @@
+{
+  "$schema": "https://raw.githubusercontent.com/swiveltech/bmad-status-board/main/packages/cli/schema.json",
+  "project": {
+    "name": "TeamPulse",
+    "key": "TEAM"
+  },
+  "paths": {
+    "bmadOutput": "_bmad-output",
+    "sprintStatus": "implementation-artifacts/sprint-status.yaml",
+    "epics": "planning-artifacts/epics.md",
+    "stories": "implementation-artifacts/",
+    "dependenciesRisks": "implementation-artifacts/dependencies-risks.yaml",
+    "testStatus": "implementation-artifacts/test-status.yaml",
+    "e2eLastRun": "implementation-artifacts/e2e-last-run.yaml",
+    "docs": "docs"
+  },
+  "jira": {
+    "baseUrl": "https://your-jira-instance.atlassian.net",
+    "projectKey": "PRJ"
+  },
+  "patterns": {
+    "jiraIssue": "\\*\\*Jira Issue:\\*\\*\\s*([\\w-]+)",
+    "epicHeading": "^###\\s+Epic\\s+(\\d+)(?:\\s+\\(continued\\))?:\\s*(.*)",
+    "storyHeading": "^###\\s+Story\\s+([\\w.-]+):\\s*(.*)",
+    "acceptanceCriteriaSection": "^##\\s+Acceptance\\s+Criteria",
+    "taskSection": "^##\\s+Tasks",
+    "descriptionSection": "^##\\s+Story",
+    "acListItem": "^(?:\\d+\\.|-|\\*)\\s*(.*)",
+    "taskCheckbox": "^(\\s*)-\\s*\\[([ xX/])\\]\\s*(.*)",
+    "epicScope": "^(.*?)\\s*\\(Epic\\s+(\\d+)(?:\\s+[^)]*)?\\)",
+    "shortIdPattern": "^(\\d+(?:-(?:cs|exec|ins|att|bld|crd|inv|lot|rs|sl|usr))?\\-\\d+[a-z]?)",
+    "storyFileTemplate": "{storyKey}.md"
+  },
+  "server": {
+    "port": 7263
+  },
+  "githubPages": {
+    "branch": "gh-pages",
+    "directory": "paneo/docs"
+  }
+}

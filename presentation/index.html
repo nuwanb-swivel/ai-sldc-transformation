@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI-Native Spec-Driven Development — TeamPulse</title>
+<meta name="description" content="How TeamPulse was built end-to-end with AI-native, spec-driven development." />
+<link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --brand-primary: #5B5CF6;
+    --brand-primary-light: #EEEEFF;
+    --brand-dark: #111318;
+    --text-primary: #111318;
+    --text-secondary: #5F636D;
+    --text-muted: #8B909A;
+    --text-inverse: #FFFFFF;
+    --bg-page: #FFFFFF;
+    --bg-subtle: #F7F8FA;
+    --bg-muted: #F1F2F5;
+    --border-light: #EAEBEF;
+    --border-default: #DADCE2;
+    --success: #20A66A;
+    --warning: #E8A317;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+    --content-max: 1180px;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+    color: var(--text-primary);
+    background: var(--bg-page);
+    -webkit-font-smoothing: antialiased;
+  }
+  img, svg { display: block; }
+  a { color: inherit; }
+
+  /* ---------- Header ---------- */
+  header { border-bottom: 1px solid var(--border-light); }
+  .header-inner {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-mark {
+    width: 32px; height: 32px; border-radius: var(--radius-md);
+    background: var(--brand-primary-light);
+    display: flex; align-items: center; justify-content: center;
+    flex: 0 0 auto;
+  }
+  .brand-mark svg { width: 17px; height: 17px; color: var(--brand-primary); }
+  .brand-text { line-height: 1.3; }
+  .brand-name { font-weight: 600; font-size: 14.5px; }
+  .brand-sub { font-size: 12.5px; color: var(--text-muted); }
+
+  /* ---------- Intro ---------- */
+  .intro {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 36px 24px 4px;
+  }
+  .intro h1 {
+    font-size: clamp(22px, 3vw, 28px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    max-width: 640px;
+    margin: 0 0 10px;
+  }
+  .intro p {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    max-width: 560px;
+    margin: 0;
+  }
+
+  /* ---------- Pipeline stepper ---------- */
+  .stepper-wrap {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 24px 24px 0;
+  }
+  .stepper {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+  .step {
+    flex: 1 1 0;
+    min-width: 96px;
+    text-align: center;
+    padding: 10px 6px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    transition: background .15s ease;
+  }
+  .step:hover { background: var(--bg-muted); }
+  .step.active { background: var(--brand-primary-light); }
+  .step-num {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--bg-muted); color: var(--text-muted);
+    font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 6px;
+  }
+  .step.active .step-num { background: var(--brand-primary); color: #fff; }
+  .step-label { font-size: 11.5px; font-weight: 500; color: var(--text-secondary); line-height: 1.3; }
+  .step.active .step-label { color: var(--brand-primary); }
+
+  /* ---------- Layout ---------- */
+  .layout {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 28px 24px 56px;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  @media (max-width: 880px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    position: sticky;
+    top: 16px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .sidebar-title {
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--text-muted); margin: 4px 0 12px 4px;
+  }
+  .stage-group { margin-bottom: 14px; }
+  .stage-heading { font-size: 13px; font-weight: 600; color: var(--text-primary); padding: 0 8px 6px; }
+  .clip-btn {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; text-align: left;
+    padding: 8px 8px; border-radius: var(--radius-md);
+    border: none; background: transparent; cursor: pointer;
+    font-family: inherit; font-size: 13px; color: var(--text-secondary); line-height: 1.35;
+  }
+  .clip-btn:hover { background: var(--bg-muted); }
+  .clip-btn.active { background: var(--brand-primary-light); color: var(--brand-primary); font-weight: 600; }
+  .clip-play {
+    flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--bg-muted); display: flex; align-items: center; justify-content: center;
+  }
+  .clip-btn.active .clip-play { background: var(--brand-primary); }
+  .clip-play svg { width: 8px; height: 8px; color: var(--text-secondary); }
+  .clip-btn.active .clip-play svg { color: #fff; }
+  .clip-text { flex: 1 1 auto; }
+  .clip-dur { flex: 0 0 auto; font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .clip-btn.active .clip-dur { color: var(--brand-primary); }
+
+  /* ---------- Main ---------- */
+  .main { min-width: 0; }
+  .player-frame {
+    background: #000;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    aspect-ratio: 16/9;
+  }
+  .player-frame video { width: 100%; height: 100%; display: block; background: #000; }
+
+  .chapter-row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; margin-top: 18px; flex-wrap: wrap;
+  }
+  .chapter-title { font-size: 19px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
+  .chapter-num { color: var(--text-muted); font-weight: 500; }
+  .chapter-dur { font-size: 12.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .chapter-dek {
+    font-size: 14px; line-height: 1.6; color: var(--text-secondary);
+    max-width: 640px; margin: 8px 0 0;
+  }
+
+  .points {
+    list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 10px;
+  }
+  .points li {
+    font-size: 13.5px; line-height: 1.55; color: var(--text-primary);
+    padding-left: 18px; position: relative;
+  }
+  .points li::before {
+    content: ""; position: absolute; left: 0; top: 7px;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--brand-primary);
+  }
+  .points code {
+    background: var(--bg-muted); padding: 1px 6px; border-radius: 4px;
+    font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  /* ---------- Governance / Verification ---------- */
+  .below {
+    border-top: 1px solid var(--border-light);
+    background: var(--bg-subtle);
+  }
+  .below-inner {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 44px 24px 56px;
+  }
+  .below-head { max-width: 640px; margin: 0 0 28px; }
+  .below-head .eyebrow {
+    font-size: 12px; font-weight: 600; color: var(--brand-primary);
+    text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;
+  }
+  .below-head h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 8px; }
+  .below-head p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+
+  .gov-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+  .gov-card {
+    background: var(--bg-page);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 18px 18px 16px;
+  }
+  .gov-card h3 { font-size: 14px; font-weight: 600; margin: 0 0 8px; }
+  .gov-card p { font-size: 13px; line-height: 1.6; color: var(--text-secondary); margin: 0; }
+  .gov-card code {
+    background: var(--bg-muted); padding: 1px 5px; border-radius: 4px;
+    font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--text-primary);
+  }
+
+  .gate-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .gate {
+    font-size: 12.5px; font-weight: 500; color: var(--text-primary);
+    background: var(--bg-page); border: 1px solid var(--border-default);
+    border-radius: var(--radius-full); padding: 7px 14px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .gate .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+  .gate.pending .dot { background: var(--warning); }
+
+  footer.credit {
+    text-align: center; color: var(--text-muted); font-size: 12px;
+    padding: 22px 24px 40px;
+  }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 8px; }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3.46447 3.46447C2 4.92893 2 7.28595 2 12C2 12.8185 2 13.5659 2.00767 14.25H5L5.10773 14.2499C5.63376 14.2491 6.10075 14.2483 6.52918 14.4319C6.9576 14.6155 7.27913 14.9542 7.64131 15.3357L7.71552 15.4138L8.85712 16.6125C8.93865 16.6981 9.00536 16.7681 9.06418 16.8277C9.11449 16.7607 9.17125 16.6825 9.24061 16.5867L12.8944 11.5435C13.0432 11.3379 13.1985 11.1233 13.3518 10.9653C13.5272 10.7844 13.7992 10.5708 14.1937 10.5527C14.5882 10.5346 14.8787 10.7223 15.0699 10.8863C15.2371 11.0297 15.4114 11.229 15.5785 11.4201L17.3823 13.4816C17.868 14.0368 17.9718 14.1316 18.085 14.183C18.1982 14.2343 18.3379 14.25 19.0756 14.25H21.9923C22 13.5659 22 12.8185 22 12C22 7.28595 22 4.92893 20.5355 3.46447C19.0711 2 16.714 2 12 2C7.28595 2 4.92893 2 3.46447 3.46447Z" fill="currentColor"/>
+          <path d="M21.9563 15.75H19.0756L18.9615 15.7501C18.4059 15.751 17.9125 15.7519 17.4652 15.5489C17.0179 15.346 16.6936 14.9741 16.3285 14.5553L16.2534 14.4694L14.4761 12.4382C14.395 12.3454 14.3284 12.2694 14.2697 12.2046C14.2171 12.2746 14.1578 12.3563 14.0855 12.4561L10.4324 17.4984C10.2894 17.696 10.1391 17.9035 9.99032 18.0574C9.8191 18.2345 9.55618 18.4416 9.17422 18.4672C8.79226 18.4929 8.50402 18.3227 8.31067 18.1701C8.1426 18.0375 7.96597 17.8519 7.79786 17.6753L6.62931 16.4483C6.14838 15.9433 6.04684 15.8572 5.9383 15.8106C5.82976 15.7641 5.69734 15.75 5 15.75H2.0437C2.1409 18.0904 2.45425 19.5253 3.46447 20.5355C4.92893 22 7.28595 22 12 22C16.714 22 19.0711 22 20.5355 20.5355C21.5458 19.5253 21.8591 18.0904 21.9563 15.75Z" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name">TeamPulse</div>
+        <div class="brand-sub">Build walkthrough</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="intro">
+    <h1>AI-native, spec-driven development</h1>
+    <p>From idea to shipped, verified code — watch how each stage was actually done.</p>
+  </div>
+
+  <div class="stepper-wrap">
+    <div class="stepper" id="stepper"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-title">Chapters</div>
+    </aside>
+
+    <main class="main">
+      <div class="player-frame">
+        <video id="player" controls preload="metadata"></video>
+      </div>
+
+      <div class="chapter-row">
+        <h2 class="chapter-title"><span class="chapter-num" id="chapter-num"></span> <span id="chapter-title"></span></h2>
+        <span class="chapter-dur" id="chapter-dur"></span>
+      </div>
+      <p class="chapter-dek" id="chapter-dek"></p>
+
+      <ul class="points" id="points"></ul>
+    </main>
+  </div>
+
+  <div class="below">
+    <div class="below-inner">
+      <div class="below-head">
+        <div class="eyebrow">Governance</div>
+        <h2>How we govern the project</h2>
+        <p>The process is fixed on purpose — the same skills, in the same order, producing the same kind of traceable artifact, on every project. That's what makes the output predictable enough to hand to a client.</p>
+      </div>
+
+      <div class="gov-grid">
+        <div class="gov-card">
+          <h3>One rulebook per repo</h3>
+          <p><code>AGENTS.md</code> is checked into the repo and defines the Definition of Done once — lint, build, unit tests, end-to-end tests, UI verification. Every change is held to it, whether written by a person or an agent.</p>
+        </div>
+        <div class="gov-card">
+          <h3>A fixed skill for each stage</h3>
+          <p>Brief, PRD, UX, architecture, story breakdown, sprint planning, build, code review, and retrospective are each a named, repeatable skill — not an ad-hoc conversation reconstructed from scratch each time.</p>
+        </div>
+        <div class="gov-card">
+          <h3>Traceability, end to end</h3>
+          <p>Every functional requirement traces from the brief, through the PRD, into an architecture decision, into a story's acceptance criteria, into a test. Nothing gets built that a spec can't be pointed to.</p>
+        </div>
+        <div class="gov-card">
+          <h3>Assumptions are decisions, not guesses</h3>
+          <p>Anything the brief or PRD left open is tagged inline (<code>[ASSUMPTION]</code>, <code>[NON-GOAL]</code>) and resolved explicitly with the product owner — never silently picked and buried in code.</p>
+        </div>
+        <div class="gov-card">
+          <h3>Conflicts get recorded, not smoothed over</h3>
+          <p>When the UX spec and the PRD disagreed on how the admin status control should behave, the resolution — and which document won — was written into <code>epics.md</code>, so the decision survives the conversation that made it.</p>
+        </div>
+        <div class="gov-card">
+          <h3>Progress is one file, not tribal knowledge</h3>
+          <p><code>sprint-status.yaml</code> tracks every story through backlog → ready-for-dev → in-progress → review → done, mirrored on the team's Paneo board — so status is a fact, not a status-meeting answer.</p>
+        </div>
+        <div class="gov-card">
+          <h3>Architecture decisions are binding</h3>
+          <p>Each of the nine architecture decisions states what it exists to prevent — e.g. authorization logic drifting into the UI layer — so two stories can't quietly implement the same concern two different ways.</p>
+        </div>
+        <div class="gov-card">
+          <h3>Review before done</h3>
+          <p>Every story gets a fresh-context code review before it's marked done — checking correctness and architecture compliance, not just whether it runs.</p>
+        </div>
+      </div>
+
+      <div class="below-head">
+        <div class="eyebrow">Verification</div>
+        <h2>Verified before it ships</h2>
+        <p>The same six gates run on every pull request — nothing merges to <code>main</code> unless all of them are green.</p>
+      </div>
+      <div class="gate-row">
+        <span class="gate"><span class="dot"></span>Lint</span>
+        <span class="gate"><span class="dot"></span>Typecheck &amp; build</span>
+        <span class="gate"><span class="dot"></span>Unit tests — real Postgres, not mocks</span>
+        <span class="gate"><span class="dot"></span>End-to-end tests — Playwright</span>
+        <span class="gate pending"><span class="dot"></span>Visual regression — Percy</span>
+        <span class="gate"><span class="dot"></span>Code review</span>
+      </div>
+    </div>
+  </div>
+
+  <footer class="credit">TeamPulse — AI-native spec-driven development walkthrough</footer>
+
+<script>
+const STAGES = [
+  {
+    id: "scaffolding",
+    label: "Scaffolding",
+    title: "Scaffolding the project",
+    dek: "The repo, environment, CI, and agent instructions — set up before any feature work starts.",
+    clips: [
+      { file: "clip-01.mp4", label: "Repo scaffold walkthrough", duration: "3:35" },
+      { file: "clip-02.mp4", label: "Local environment & tooling setup", duration: "8:57" },
+    ],
+    points: [
+      "Next.js App Router, TypeScript, Tailwind — the baseline.",
+      "Postgres via Docker, with a documented one-command local setup.",
+      "CI skeleton in place before the first feature.",
+      "Definition of Done declared up front in <code>AGENTS.md</code>.",
+    ],
+  },
+  {
+    id: "brief",
+    label: "Product Brief",
+    title: "Product brief",
+    dek: "The problem, the solution, and what's explicitly out of scope — before anything is designed or built.",
+    clips: [
+      { file: "clip-03.mp4", label: "Drafting the TeamPulse product brief", duration: "1:57" },
+    ],
+    points: [
+      "Problem: ideas get lost in Slack threads with no visible home.",
+      "Solution: submit, browse, upvote, track status.",
+      "A specific success bar — not a vague goal.",
+      "Open gaps flagged, not silently assumed.",
+    ],
+  },
+  {
+    id: "prd",
+    label: "PRD",
+    title: "PRD",
+    dek: "The brief becomes numbered, testable requirements — what engineering actually builds against.",
+    clips: [
+      { file: "clip-04.mp4", label: "Building the PRD from the brief", duration: "17:08" },
+    ],
+    points: [
+      "Five functional requirements, each with testable consequences.",
+      "Explicit non-goals — no Slack, no notifications, no SSO in v1.",
+      "Success metrics defined, including a counter-metric.",
+    ],
+  },
+  {
+    id: "ux",
+    label: "UX Design",
+    title: "UX design",
+    dek: "A design system — tokens, components, and behavior — not a one-off mockup.",
+    clips: [
+      { file: "clip-05.mp4", label: "Building DESIGN.md, EXPERIENCE.md, and the .pen composition", duration: "6:30" },
+    ],
+    points: [
+      "One accent color, used only for action and selection.",
+      "Every component's states defined before any UI code.",
+      "A live, maintained design file — not a frozen screenshot.",
+      "Accessibility (WCAG 2.2 AA) written into the spec.",
+    ],
+  },
+  {
+    id: "architecture",
+    label: "Architecture",
+    title: "Architecture",
+    dek: "A short decision log — nine rules pinning down auth, mutations, and testing before code exists.",
+    clips: [
+      { file: "clip-06.mp4", label: "Writing the architecture spine and decision log", duration: "6:57" },
+    ],
+    points: [
+      "One path for every mutation — no competing patterns.",
+      "Authorization lives in one place, never just the UI.",
+      "Upvote uniqueness enforced by the database itself.",
+      "Every test runs against a real database, never a mock.",
+    ],
+  },
+  {
+    id: "stories",
+    label: "Story Breakdown",
+    title: "Story breakdown",
+    dek: "Every requirement traced into a story with acceptance criteria an agent can build and verify against.",
+    clips: [
+      { file: "clip-07.mp4", label: "Decomposing the PRD into epics and stories", duration: "11:57" },
+    ],
+    points: [
+      "Given/When/Then acceptance criteria, traced to a requirement.",
+      "A real spec conflict caught and resolved here, on record.",
+    ],
+  },
+  {
+    id: "sprint",
+    label: "Sprint Planning",
+    title: "Sprint planning",
+    dek: "The backlog becomes a tracked sprint — visible progress, story by story.",
+    clips: [
+      { file: "clip-08.mp4", label: "Generating and validating the sprint plan", duration: "13:04" },
+    ],
+    points: [
+      "Every story moves through explicit, visible states.",
+      "Scoped narrowly on purpose — not \"build everything at once.\"",
+    ],
+  },
+  {
+    id: "build",
+    label: "Build & Test",
+    title: "Build, test, verify",
+    dek: "Implementation, gated the same way every time — lint, build, tests, review.",
+    clips: [
+      { file: "clip-09.mp4", label: "Implementing, testing, and reviewing a story end to end", duration: "43:15" },
+    ],
+    points: [
+      "Unit and end-to-end tests before a story counts as done.",
+      "A fresh-context code review on every story.",
+      "Example: employee login, built and verified this way.",
+    ],
+  },
+];
+
+const stepperEl = document.getElementById("stepper");
+const sidebarEl = document.getElementById("sidebar");
+const playerEl = document.getElementById("player");
+const numEl = document.getElementById("chapter-num");
+const titleEl = document.getElementById("chapter-title");
+const durEl = document.getElementById("chapter-dur");
+const dekEl = document.getElementById("chapter-dek");
+const pointsEl = document.getElementById("points");
+
+function buildStepper() {
+  stepperEl.innerHTML = STAGES.map((s, i) => `
+    <button class="step" data-stage="${s.id}" type="button">
+      <div class="step-num">${i + 1}</div>
+      <div class="step-label">${s.label}</div>
+    </button>
+  `).join("");
+}
+
+function buildSidebar() {
+  sidebarEl.insertAdjacentHTML("beforeend", STAGES.map((s, i) => `
+    <div class="stage-group" data-stage-group="${s.id}">
+      <div class="stage-heading">${i + 1}. ${s.label}</div>
+      ${s.clips.map(c => `
+        <button class="clip-btn" data-stage="${s.id}" data-file="${c.file}" type="button">
+          <span class="clip-play"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M1 0.5L9 5L1 9.5V0.5Z"/></svg></span>
+          <span class="clip-text">${c.label}</span>
+          <span class="clip-dur">${c.duration}</span>
+        </button>
+      `).join("")}
+    </div>
+  `).join(""));
+}
+
+function selectStage(stageId, file, autoplay) {
+  const stage = STAGES.find(s => s.id === stageId);
+  if (!stage) return;
+  const clip = stage.clips.find(c => c.file === file) || stage.clips[0];
+
+  playerEl.setAttribute("src", "assets/videos/" + clip.file);
+  playerEl.load();
+  if (autoplay) playerEl.play().catch(() => {});
+
+  const idx = STAGES.indexOf(stage) + 1;
+  numEl.textContent = idx + ".";
+  titleEl.textContent = stage.clips.length > 1 ? clip.label : stage.title;
+  durEl.textContent = clip.duration;
+  dekEl.textContent = stage.dek;
+  pointsEl.innerHTML = stage.points.map(p => `<li>${p}</li>`).join("");
+
+  document.querySelectorAll(".step").forEach(el => el.classList.toggle("active", el.dataset.stage === stageId));
+  document.querySelectorAll(".clip-btn").forEach(el => el.classList.toggle("active", el.dataset.file === clip.file));
+
+  window.scrollTo({ top: document.querySelector(".stepper-wrap").offsetTop, behavior: "smooth" });
+}
+
+buildStepper();
+buildSidebar();
+
+stepperEl.addEventListener("click", (e) => {
+  const step = e.target.closest(".step");
+  if (step) selectStage(step.dataset.stage, null, false);
+});
+
+sidebarEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".clip-btn");
+  if (btn) selectStage(btn.dataset.stage, btn.dataset.file, true);
+});
+
+selectStage(STAGES[0].id, null, false);
+</script>
+</body>
+</html>

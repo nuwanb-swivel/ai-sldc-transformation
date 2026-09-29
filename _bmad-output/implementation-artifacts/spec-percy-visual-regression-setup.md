@@ -2,7 +2,7 @@
 title: 'Percy Visual Regression Setup'
 type: 'chore'
 created: '2026-09-29'
-status: 'done'
+status: 'in-review'
 route: 'dispatch'
 review_loop_iteration: 0
 context: []
@@ -54,6 +54,14 @@ All 5 execution tasks were already complete; this pass ran the verification comm
 ## Spec Change Log
 
 ## Review Triage Log
+
+- **`.env.example` has no `PERCY_TOKEN` placeholder** (blind-hunter) — `low`, verified: `.env.example` documents `DATABASE_URL`/`BETTER_AUTH_SECRET` but not this new opt-in var. Trivial one-line addition. → `patch`.
+- **`test:visual` CI step re-runs the entire Playwright suite unconditionally, doubling CI build+test cost on every PR/push for zero benefit until `PERCY_TOKEN` exists, with no comment/guard signaling this** (blind-hunter, verification-gap) — `medium`, verified: the new step has no `if:` condition and runs a full `next build && next start` + full Playwright run a second time; until the `PERCY_TOKEN` repo secret is added, `percySnapshot()` no-ops so this is pure wasted CI time on every run. Fix is trivial (an `if:` guard on the step + an explanatory comment) and doesn't contradict the frozen "additive, must not hard-fail without a token" constraint — it's still additive once the secret exists, just skipped (not wastefully run) until then. → `patch`.
+- **No `.percy.yml` (snapshot widths, ignored/dynamic regions)** (blind-hunter) — `low`, verified: none was added, so Percy runs at CLI defaults for widths/asset discovery. Reasonable for a first rollout with only 2 screens; deciding real breakpoints/ignore-regions is more than a trivial correction and not urgent before a baseline even exists. → `low`, rejected.
+- **`package-lock.json`'s diff wasn't part of the reviewed changeset** (blind-hunter) — `false`: this was a deliberate exclusion when generating the review diff (the lockfile diff is ~2500 lines of npm-generated noise), not a code defect; separately confirmed `npm install` correctly updated it for the two new packages.
+- **Spec's frozen Approach promises `percySnapshot` coverage for "loading splash default/reduced-motion" but only the reduced-motion state has a test/snapshot; no "Loading - default" state is covered** (blind-hunter, edge-case-hunter claims-check) — `medium`, verified: `e2e/loading.spec.ts` has exactly one test (reduced-motion); the Design Notes' "why only 3 snapshots" justification doesn't address this specific gap. This leaves the most animation-heavy screen's default state — arguably the state most likely to visually regress, and the one most analogous to the login-photo bug this whole story is motivated by — with no Percy coverage. Fix (a second test hitting the same existing diagnostic route without forcing reduced motion, plus its own `percySnapshot` call) is trivial, reuses existing fixtures, and fulfills rather than contradicts the frozen Approach's own stated scope. → `patch`.
+- **`percySnapshot` in `e2e/login.spec.ts` fires before the background photo asset finishes loading, potentially missing exactly the defect class Percy is meant to catch** (edge-case-hunter) — `false`, verified against `@percy/playwright`/`@percy/dom` source: `percySnapshot()` serializes the DOM/CSSOM (a resource URL string for a CSS `background-image: url(...)`, not pixel data) and Percy's cloud renderer independently fetches/renders that URL later, so whether Playwright's local browser had already loaded the image is irrelevant.
+- **`percySnapshot` in `e2e/loading.spec.ts` runs inside a fixed delay window with no guard against the route resolving mid-capture** (edge-case-hunter) — `false`, verified: `await percySnapshot(...)` fully awaits synchronous DOM serialization + the upload POST before returning, on the page as it exists at that instant; the diagnostic route's server-side delay can only resolve and swap content strictly after that await returns, never during it.
 
 ## Design Notes
 

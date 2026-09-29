@@ -65,3 +65,31 @@ test("under prefers-reduced-motion, the loading splash shows one static ~40%-opa
   // in a clean, request-settled state.
   await expect(page.getByText("ok")).toBeVisible({ timeout: 10_000 });
 });
+
+test("without prefers-reduced-motion, the loading splash shows the animated rings", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel("Username").fill(TEST_USERNAME);
+  await page.getByLabel("Password").fill(TEST_PASSWORD);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL("/");
+
+  await page.goto("/e2e-diagnostics/loading-check?ms=5000", {
+    waitUntil: "commit",
+  });
+
+  const loadingLabel = page.getByText("Loading TeamPulse…");
+  await expect(loadingLabel).toBeVisible();
+
+  const rings = page.locator(
+    ".relative.flex.h-\\[200px\\].w-\\[200px\\] > span[aria-hidden='true']",
+  );
+  await expect(rings).toHaveCount(4);
+
+  await percySnapshot(page, "Loading - default");
+
+  // Let the diagnostic route resolve so the browser context ends this test
+  // in a clean, request-settled state.
+  await expect(page.getByText("ok")).toBeVisible({ timeout: 10_000 });
+});

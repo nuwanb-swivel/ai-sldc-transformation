@@ -7,3 +7,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-2-employee-authenticates-and-reaches-the-app.md`
   summary: Add a `.returning()`/row-count check to `scripts/seed-user.ts`'s role-assignment `db.update().where()` once an admin-gated route exists to make a silently-wrong role observable.
   evidence: The update can match zero rows (e.g. a typo'd `--username`) and the script still logs success; the one concrete trigger theory considered (mixed-case username causing a lookup mismatch) was checked and disproven — Better Auth's `username` plugin normalizes to lowercase on signup regardless of input case — so today's actual risk is low, but the missing check itself is real.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-2-employee-authenticates-and-reaches-the-app.md`
+  summary: Percy UI verification for the login/loading `percySnapshot()` calls is not yet gating CI — confirm visually once the `PERCY_TOKEN` repo secret is added.
+  evidence: Per `AGENTS.md`, `PERCY_TOKEN` is still pending human setup; without it Percy no-ops instead of failing the build, so the "UI verification" leg of the Definition of Done for this story hasn't actually run yet.

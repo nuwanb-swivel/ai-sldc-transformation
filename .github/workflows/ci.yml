@@ -66,6 +66,10 @@ jobs:
         run: npm run test:e2e
 
       - name: Visual regression (Percy)
+        # Without PERCY_TOKEN, percySnapshot() no-ops and this step would just
+        # rerun the full build+start+Playwright suite for no benefit -- skip
+        # it entirely until a human adds the PERCY_TOKEN repo secret.
+        if: ${{ secrets.PERCY_TOKEN != '' }}
         run: npm run test:visual
         env:
           PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}

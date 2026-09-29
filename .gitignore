@@ -47,3 +47,8 @@ next-env.d.ts
 
 # Paneo generated static board (regenerated locally / in CI)
 paneo/docs/
+
+# Raw screen-recording sources for the /presentation walkthrough — large,
+# kept locally only. The transcoded, web-ready clips it references live in
+# presentation/assets/videos/ and are tracked normally.
+/presentation/videos/

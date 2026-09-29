@@ -47,12 +47,12 @@ sprints:
     status: active
     stories:
       1-1-project-data-test-foundation: done
-      1-2-employee-authenticates-and-reaches-the-app: review
+      1-2-employee-authenticates-and-reaches-the-app: done
 
 development_status:
   epic-1: in-progress
   1-1-project-data-test-foundation: done
-  1-2-employee-authenticates-and-reaches-the-app: review
+  1-2-employee-authenticates-and-reaches-the-app: done
   epic-1-retrospective: optional
 
   epic-2: backlog

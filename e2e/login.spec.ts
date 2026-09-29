@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import percySnapshot from "@percy/playwright";
 
 // Requires a provisioned user (`npm run db:seed -- --username <TEST_USERNAME>
 // --password <TEST_PASSWORD>`) -- see `.github/workflows/ci.yml`'s "Seed e2e
@@ -10,6 +11,7 @@ test("logging in with correct credentials lands on the app shell and persists ac
   page,
 }) => {
   await page.goto("/login");
+  await percySnapshot(page, "Login - default");
 
   await page.getByLabel("Username").fill(TEST_USERNAME);
   await page.getByLabel("Password").fill(TEST_PASSWORD);
@@ -50,4 +52,5 @@ test("logging in with an incorrect password shows the inline error and retains t
   ).toBeVisible();
   await expect(page.getByLabel("Username")).toHaveValue(TEST_USERNAME);
   await expect(page).toHaveURL("/login");
+  await percySnapshot(page, "Login - error");
 });

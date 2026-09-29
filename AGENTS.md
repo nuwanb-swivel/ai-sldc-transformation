@@ -24,6 +24,6 @@ The canonical visual reference for building TeamPulse screens is `design/ux-desi
 - Build: `npm run build` must pass — this also runs the project's strict TypeScript check (`tsconfig.json`), since `next.config.ts` does not set `typescript.ignoreBuildErrors`.
 - Unit tests: TODO — Vitest is the decided framework, not yet installed. Add it, wire a `test` script, and gate on `npx vitest run` once scaffolded.
 - Automation/functional tests (one gate): TODO — Playwright is the decided framework per the architecture spine (covers the five FR journeys), not yet installed. Add it, wire a `test:e2e` script, and gate on `npx playwright test` once scaffolded.
-- UI verification: TODO — Percy is the decided tool, not yet installed. Gate is Percy's visual diff against baseline, wired into the Playwright run once both exist.
+- UI verification: Percy (`@percy/cli`, `@percy/playwright`) is installed and wired into the Playwright run via `npm run test:visual` (`percy exec -- playwright test`), with `percySnapshot()` calls in `e2e/login.spec.ts` and `e2e/loading.spec.ts`, and a CI step after "E2E tests" that runs it with `PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}`. Without a `PERCY_TOKEN`, Percy no-ops rather than gating — the `PERCY_TOKEN` repo secret is still pending human setup, so the gate is not yet enforced in CI until that secret is added.
 
 <!-- /bmad:context -->

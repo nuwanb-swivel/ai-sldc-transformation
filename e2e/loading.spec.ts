@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import percySnapshot from "@percy/playwright";
 
 // Requires the same provisioned user as `e2e/login.spec.ts` (see that file's
 // comment for how to seed it) -- `proxy.ts` gates every route except
@@ -57,6 +58,8 @@ test("under prefers-reduced-motion, the loading splash shows one static ~40%-opa
 
   expect(staticStyles.display).toBe("block");
   expect(Number(staticStyles.opacity)).toBeCloseTo(0.4, 1);
+
+  await percySnapshot(page, "Loading - reduced motion");
 
   // Let the diagnostic route resolve so the browser context ends this test
   // in a clean, request-settled state.

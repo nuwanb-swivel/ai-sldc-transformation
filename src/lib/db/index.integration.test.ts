@@ -14,7 +14,11 @@ describe("db", () => {
   it("inserts and reads a user row through drizzle", async () => {
     const [inserted] = await db
       .insert(user)
-      .values({ username: "jane.doe" })
+      .values({
+        username: "jane.doe",
+        name: "jane.doe",
+        email: "jane.doe@teampulse.local",
+      })
       .returning();
 
     expect(inserted.username).toBe("jane.doe");

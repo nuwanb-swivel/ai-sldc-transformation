@@ -27,6 +27,12 @@ jobs:
     env:
       DATABASE_URL: postgresql://teampulse:teampulse@localhost:1999/teampulse
       BETTER_AUTH_SECRET: ci-only-placeholder-secret-not-sensitive
+      # Single source of truth for the e2e test user's password -- both the
+      # seed step below and `npm run test:e2e` (which reads
+      # `E2E_TEST_PASSWORD` itself, see e2e/login.spec.ts and
+      # e2e/loading.spec.ts) use this same env var instead of each hardcoding
+      # the literal separately.
+      E2E_TEST_PASSWORD: correct-horse-battery-staple
 
     steps:
       - uses: actions/checkout@v4
@@ -52,6 +58,9 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
+
+      - name: Seed e2e test user
+        run: npm run db:seed -- --username e2e.employee --password "$E2E_TEST_PASSWORD"
 
       - name: E2E tests
         run: npm run test:e2e

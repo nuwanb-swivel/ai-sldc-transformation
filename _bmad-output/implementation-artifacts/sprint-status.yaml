@@ -29,15 +29,30 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-28-2026 20:26
-last_updated: 09-28-2026 22:10
+last_updated: 09-28-2026 22:45
 project: TeamPulse
 project_key: NOKEY
 tracking_system: file-system
 story_location: _bmad-output/implementation-artifacts
+
+# Manual sprint-assignment bridge for Paneo — see docs/paneo-active-sprint-gap.md.
+# Not written by BMAD's sprint-planning skill; keep in sync with development_status
+# by hand (or re-add it) each time sprint-planning regenerates this file.
+sprints:
+  sprint-1:
+    number: 1
+    start: "2026-09-15"
+    end: "2026-09-29"
+    goal: "Ship project/data test foundation and employee authentication for Epic 1"
+    status: active
+    stories:
+      1-1-project-data-test-foundation: done
+      1-2-employee-authenticates-and-reaches-the-app: review
+
 development_status:
   epic-1: in-progress
-  1-1-project-data-test-foundation: review
-  1-2-employee-authenticates-and-reaches-the-app: backlog
+  1-1-project-data-test-foundation: done
+  1-2-employee-authenticates-and-reaches-the-app: review
   epic-1-retrospective: optional
 
   epic-2: backlog

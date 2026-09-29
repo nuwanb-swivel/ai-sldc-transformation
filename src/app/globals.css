@@ -3,24 +3,69 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* DESIGN.md tokens -- scoped to what Login/Loading consume, not the full
+     design system (that lands screen-by-screen as later stories need it). */
+  --brand-dark: #111318;
+  --brand-primary: #5b5cf6;
+  --brand-primary-hover: #4b4ce6;
+  --brand-primary-light: #eeeeff;
+  --text-primary: #111318;
+  --text-secondary: #5f636d;
+  --text-muted: #8b909a;
+  --text-inverse: #ffffff;
+  --text-dark-secondary: #a6abb8;
+  --bg-page: #ffffff;
+  --border-default: #dadce2;
+  --error-dark: #ff7a7a;
+  --error-bg-dark: #3a1e20;
+  --focus-ring: 0 0 0 3px rgba(91, 92, 246, 0.2);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: var(--font-inter);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-hover: var(--brand-primary-hover);
+  --color-brand-primary-light: var(--brand-primary-light);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
+  --color-text-dark-secondary: var(--text-dark-secondary);
+  --color-bg-page: var(--bg-page);
+  --color-border-default: var(--border-default);
+  --color-error-dark: var(--error-dark);
+  --color-error-bg-dark: var(--error-bg-dark);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Loading screen pulse rings (EXPERIENCE.md Motion & Loading): 2-3 concentric
+   rings expanding and fading, ~2s cycle, ease-out, staggered ~0.7s apart. */
+@keyframes loading-ring-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.loading-ring {
+  animation: loading-ring-pulse 2s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-ring--decorative {
+    display: none;
+  }
 }

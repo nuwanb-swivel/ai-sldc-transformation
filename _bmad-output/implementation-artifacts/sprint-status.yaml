@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-28-2026 20:26
-last_updated: 09-30-2026 09:13
+last_updated: 09-30-2026 09:30
 project: TeamPulse
 project_key: NOKEY
 tracking_system: file-system
@@ -44,10 +44,18 @@ sprints:
     start: "2026-09-15"
     end: "2026-09-29"
     goal: "Ship project/data test foundation and employee authentication for Epic 1"
-    status: active
+    status: done
     stories:
       1-1-project-data-test-foundation: done
       1-2-employee-authenticates-and-reaches-the-app: done
+  sprint-2:
+    number: 2
+    start: "2026-09-30"
+    end: "2026-10-13"
+    goal: "Ship the Idea Board (Epic 2)"
+    status: active
+    stories:
+      2-1-submit-an-idea: review
 
 development_status:
   epic-1: in-progress

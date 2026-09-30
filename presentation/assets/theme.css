@@ -1,0 +1,117 @@
+/* Shared tokens and base components for the TeamPulse presentation pages. */
+
+:root {
+  color-scheme: dark;
+  --bg: #0A0A0B;
+  --bg-raised: #131316;
+  --bg-inset: #0D0D0F;
+  --line: rgba(242,241,238,0.10);
+  --line-strong: rgba(242,241,238,0.18);
+  --text: #F2F1EE;
+  --text-dim: rgba(242,241,238,0.64);
+  --text-faint: rgba(242,241,238,0.36);
+  --accent: #E2703A;
+  --accent-soft: rgba(226,112,58,0.14);
+  --accent-text: #FFB088;
+  --ok: #6FCF97;
+  --pending: #E2B23A;
+  --radius: 3px;
+  --content-max: 1220px;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+body {
+  margin: 0;
+  font-family: var(--sans);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+img, svg { display: block; }
+a { color: inherit; }
+code {
+  font-family: var(--mono);
+  background: var(--bg-inset);
+  border: 1px solid var(--line);
+  padding: 1px 6px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  color: var(--text);
+}
+:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+
+.reveal { opacity: 0; transform: translateY(10px); transition: opacity .5s ease, transform .5s ease; }
+.reveal.in { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ---------- Header ---------- */
+header { border-bottom: 1px solid var(--line); position: sticky; top: 0; background: rgba(10,10,11,0.86); backdrop-filter: blur(10px); z-index: 20; }
+.header-inner {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+}
+.brand-group { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 28px; height: 28px;
+  border: 1px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center;
+  flex: 0 0 auto;
+  font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--accent);
+}
+.brand-text { line-height: 1.25; }
+.brand-name { font-weight: 600; font-size: 14px; letter-spacing: -0.01em; }
+.brand-sub { font-size: 11px; color: var(--text-faint); font-family: var(--mono); }
+
+.header-nav { display: flex; align-items: center; gap: 20px; }
+.header-nav a {
+  font-family: var(--mono); font-size: 11.5px; color: var(--text-dim);
+  text-decoration: none; border-bottom: 1px solid transparent;
+  transition: color .15s ease, border-color .15s ease;
+  padding-bottom: 2px;
+}
+.header-nav a:hover { color: var(--text); border-color: var(--line-strong); }
+.header-nav a.current { color: var(--accent-text); border-color: var(--accent); }
+
+/* ---------- Section header pattern ---------- */
+.below-head { max-width: 560px; margin: 0 0 28px; }
+.below-head h2 { font-size: 24px; font-weight: 700; letter-spacing: -0.015em; margin: 0 0 10px; }
+.below-head p { font-size: 14px; color: var(--text-dim); line-height: 1.65; margin: 0; }
+
+/* ---------- CTA ---------- */
+.cta-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 12.5px; font-weight: 500;
+  color: var(--bg); background: var(--accent-text);
+  border: 1px solid var(--accent-text);
+  padding: 10px 16px;
+  text-decoration: none;
+  transition: opacity .15s ease;
+}
+.cta-link:hover { opacity: 0.85; }
+.cta-link.ghost {
+  color: var(--text); background: transparent; border-color: var(--line-strong);
+}
+.cta-link.ghost:hover { border-color: var(--accent); color: var(--accent-text); opacity: 1; }
+
+footer.credit {
+  text-align: center; color: var(--text-faint); font-size: 11.5px; font-family: var(--mono);
+  padding: 26px 24px 44px;
+  border-top: 1px solid var(--line);
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--line-strong); }

@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Build Log: TeamPulse</title>
+<meta name="description" content="How TeamPulse was built end-to-end with AI-native, spec-driven development." />
+<link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/theme.css" />
+<style>
+  /* ---------- Hero ---------- */
+  .hero {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 56px 24px 28px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: end;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero h1 {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    max-width: 620px;
+    margin: 0 0 14px;
+  }
+  .hero p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-dim);
+    max-width: 480px;
+    margin: 0;
+  }
+  .hero-readout {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-faint);
+    display: grid;
+    gap: 4px;
+    white-space: nowrap;
+    padding-bottom: 4px;
+  }
+  .hero-readout .row { display: flex; gap: 14px; justify-content: space-between; }
+  .hero-readout .row b { color: var(--text); font-weight: 500; }
+  @media (max-width: 700px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-readout { justify-self: start; }
+  }
+
+  /* ---------- Pipeline stepper ---------- */
+  .stepper-wrap {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 20px 24px 0;
+  }
+  .stepper {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .step {
+    flex: 1 1 0;
+    min-width: 92px;
+    text-align: left;
+    padding: 0 10px 12px 0;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid var(--line);
+    transition: border-color .15s ease;
+  }
+  .step:hover { border-color: var(--line-strong); }
+  .step.active { border-color: var(--accent); }
+  .step-num {
+    font-family: var(--mono); font-size: 11px; color: var(--text-faint);
+    margin-bottom: 6px;
+  }
+  .step.active .step-num { color: var(--accent-text); }
+  .step-label { font-size: 12px; font-weight: 500; color: var(--text-dim); line-height: 1.3; }
+  .step.active .step-label { color: var(--text); }
+
+  /* ---------- Layout ---------- */
+  .layout {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+  @media (max-width: 880px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    position: sticky;
+    top: 72px;
+    max-height: calc(100vh - 88px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .sidebar-title {
+    font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-faint); margin: 0 0 14px; font-family: var(--mono);
+  }
+  .stage-group { margin-bottom: 18px; border-left: 1px solid var(--line); padding-left: 12px; }
+  .stage-heading {
+    font-size: 12.5px; font-weight: 600; color: var(--text); padding-bottom: 8px;
+    display: flex; gap: 8px; align-items: baseline;
+  }
+  .stage-heading .idx { font-family: var(--mono); color: var(--text-faint); font-weight: 500; }
+  .clip-btn {
+    display: flex; align-items: baseline; gap: 8px;
+    width: 100%; text-align: left;
+    padding: 6px 0; border: none; background: transparent; cursor: pointer;
+    font-family: inherit; font-size: 12.5px; color: var(--text-dim); line-height: 1.4;
+    border-left: 2px solid transparent; margin-left: -13px; padding-left: 11px;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  .clip-btn:hover { color: var(--text); }
+  .clip-btn.active { color: var(--accent-text); border-left-color: var(--accent); }
+  .clip-text { flex: 1 1 auto; }
+  .clip-dur { flex: 0 0 auto; font-size: 11px; color: var(--text-faint); font-family: var(--mono); }
+  .clip-btn.active .clip-dur { color: var(--accent-text); }
+
+  /* ---------- Main / Player ---------- */
+  .main { min-width: 0; }
+  .player-frame {
+    position: relative;
+    background: #000;
+    overflow: hidden;
+    aspect-ratio: 16/9;
+    border: 1px solid var(--line-strong);
+  }
+  .player-frame video { width: 100%; height: 100%; display: block; background: #000; }
+  .corner-tl, .corner-br {
+    position: absolute; width: 14px; height: 14px; pointer-events: none; z-index: 2; content: "";
+  }
+  .corner-tl { top: -1px; left: -1px; border-top: 2px solid var(--accent); border-left: 2px solid var(--accent); }
+  .corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: var(--mono); font-size: 11px; color: var(--text-faint);
+    padding: 8px 2px 0;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 10px;
+  }
+  .status-bar span b { color: var(--text-dim); font-weight: 500; }
+
+  .chapter-row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; margin-top: 20px; flex-wrap: wrap;
+  }
+  .chapter-title { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+  .chapter-num { color: var(--accent-text); font-weight: 500; font-family: var(--mono); font-size: 15px; margin-right: 8px; }
+  .chapter-dur { font-size: 12px; color: var(--text-faint); font-family: var(--mono); white-space: nowrap; }
+
+  .chapter-dek {
+    font-size: 14px; line-height: 1.6; color: var(--text-dim);
+    max-width: 620px; margin: 10px 0 0;
+  }
+
+  .points {
+    list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 2px;
+    border-top: 1px solid var(--line);
+    counter-reset: pt;
+  }
+  .points li {
+    font-size: 13.5px; line-height: 1.55; color: var(--text);
+    padding: 12px 0 12px 34px; position: relative;
+    border-bottom: 1px solid var(--line);
+  }
+  .points li::before {
+    counter-increment: pt;
+    content: counter(pt, decimal-leading-zero);
+    position: absolute; left: 0; top: 12px;
+    font-family: var(--mono); font-size: 11px; color: var(--text-faint);
+  }
+
+  /* ---------- Governance ---------- */
+  .below {
+    border-top: 1px solid var(--line);
+    background: var(--bg-raised);
+  }
+  .below-inner {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 56px 24px 64px;
+  }
+
+  .gov-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 48px;
+  }
+  .gov-card {
+    background: var(--bg-inset);
+    padding: 22px 20px 20px;
+  }
+  .gov-card.span-2 { grid-column: span 2; }
+  .gov-card.tint { background: linear-gradient(150deg, var(--accent-soft), var(--bg-inset) 70%); }
+  .gov-card h3 { font-size: 13.5px; font-weight: 600; margin: 0 0 8px; }
+  .gov-card p { font-size: 12.5px; line-height: 1.6; color: var(--text-dim); margin: 0; }
+  @media (max-width: 900px) {
+    .gov-grid { grid-template-columns: repeat(2, 1fr); }
+    .gov-card.span-2 { grid-column: span 2; }
+  }
+  @media (max-width: 560px) {
+    .gov-grid { grid-template-columns: 1fr; }
+    .gov-card.span-2 { grid-column: span 1; }
+  }
+
+  .gate-log { border-top: 1px solid var(--line); }
+  .gate {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 2px;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .gate .tag {
+    font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.02em;
+    color: var(--ok); flex: 0 0 auto; width: 76px;
+  }
+  .gate.pending .tag { color: var(--pending); }
+  .gate .name { color: var(--text); }
+  .gate .meta { margin-left: auto; color: var(--text-faint); font-family: var(--mono); font-size: 11.5px; }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="brand-group">
+        <div class="brand-mark">TP</div>
+        <div class="brand-text">
+          <div class="brand-name">TeamPulse</div>
+          <div class="brand-sub">build log</div>
+        </div>
+      </div>
+      <nav class="header-nav">
+        <a href="index.html">Overview</a>
+        <a href="walkthrough.html" class="current">Build log</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div>
+      <h1>Spec-driven, end to end.</h1>
+      <p>Every stage of building TeamPulse, recorded as it happened, each one checked against the same definition of done.</p>
+    </div>
+    <div class="hero-readout">
+      <div class="row"><span>stages</span><b>08</b></div>
+      <div class="row"><span>clips</span><b>09</b></div>
+      <div class="row"><span>runtime</span><b>~113 min</b></div>
+    </div>
+  </div>
+
+  <div class="stepper-wrap">
+    <div class="stepper" id="stepper"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-title">Chapters</div>
+    </aside>
+
+    <main class="main">
+      <div class="player-frame">
+        <span class="corner-tl"></span><span class="corner-br"></span>
+        <video id="player" controls preload="metadata"></video>
+      </div>
+
+      <div class="status-bar">
+        <span>stage <b id="status-stage"></b></span>
+        <span id="status-clip"></span>
+      </div>
+
+      <div class="chapter-row">
+        <h2 class="chapter-title"><span class="chapter-num" id="chapter-num"></span><span id="chapter-title"></span></h2>
+        <span class="chapter-dur" id="chapter-dur"></span>
+      </div>
+      <p class="chapter-dek" id="chapter-dek"></p>
+
+      <ul class="points" id="points"></ul>
+    </main>
+  </div>
+
+  <div class="below">
+    <div class="below-inner">
+      <div class="below-head reveal">
+        <h2>How we govern the project</h2>
+        <p>The process is fixed on purpose. The same skills, in the same order, produce the same kind of traceable artifact on every project. That's what makes the output predictable enough to hand to a client.</p>
+      </div>
+
+      <div class="gov-grid reveal">
+        <div class="gov-card span-2 tint">
+          <h3>One rulebook per repo</h3>
+          <p><code>AGENTS.md</code> is checked into the repo and defines the Definition of Done once: lint, build, unit tests, end-to-end tests, UI verification. Every change is held to it, whether written by a person or an agent.</p>
+        </div>
+        <div class="gov-card">
+          <h3>A fixed skill for each stage</h3>
+          <p>Brief, PRD, UX, architecture, story breakdown, sprint planning, build, code review, and retrospective are each a named, repeatable skill, not an ad-hoc conversation rebuilt from scratch each time.</p>
+        </div>
+        <div class="gov-card">
+          <h3>Traceability, end to end</h3>
+          <p>Every functional requirement traces from the brief, through the PRD, into an architecture decision, into a story's acceptance criteria, into a test. Nothing gets built that a spec can't be pointed to.</p>
+        </div>
+        <div class="gov-card">
+          <h3>Assumptions are decisions</h3>
+          <p>Anything the brief or PRD left open is tagged inline (<code>[ASSUMPTION]</code>, <code>[NON-GOAL]</code>) and resolved explicitly with the product owner, never silently picked and buried in code.</p>
+        </div>
+        <div class="gov-card tint">
+          <h3>Conflicts get recorded</h3>
+          <p>When the UX spec and the PRD disagreed on the admin status control, the resolution, and which document won, was written into <code>epics.md</code>, so the decision survives the conversation that made it.</p>
+        </div>
+        <div class="gov-card span-2">
+          <h3>Progress is one file, not tribal knowledge</h3>
+          <p><code>sprint-status.yaml</code> tracks every story through backlog &rarr; ready-for-dev &rarr; in-progress &rarr; review &rarr; done, mirrored on the team's Paneo board, so status is a fact, not a status-meeting answer.</p>
+        </div>
+        <div class="gov-card">
+          <h3>Architecture decisions bind</h3>
+          <p>Each of the nine architecture decisions states what it exists to prevent (for example, authorization logic drifting into the UI layer), so two stories can't quietly solve the same problem two ways.</p>
+        </div>
+        <div class="gov-card">
+          <h3>Review before done</h3>
+          <p>Every story gets a fresh-context code review before it's marked done, checking correctness and architecture compliance, not just whether it runs.</p>
+        </div>
+      </div>
+
+      <div class="below-head reveal">
+        <h2>Verified before it ships</h2>
+        <p>The same six gates run on every pull request. Nothing merges to <code>main</code> unless all of them pass.</p>
+      </div>
+      <div class="gate-log reveal">
+        <div class="gate"><span class="tag">[PASS]</span><span class="name">Lint</span><span class="meta">eslint</span></div>
+        <div class="gate"><span class="tag">[PASS]</span><span class="name">Typecheck &amp; build</span><span class="meta">tsc, strict</span></div>
+        <div class="gate"><span class="tag">[PASS]</span><span class="name">Unit tests</span><span class="meta">real Postgres, not mocks</span></div>
+        <div class="gate"><span class="tag">[PASS]</span><span class="name">End-to-end tests</span><span class="meta">Playwright</span></div>
+        <div class="gate pending"><span class="tag">[PENDING]</span><span class="name">Visual regression</span><span class="meta">Percy, awaiting token</span></div>
+        <div class="gate"><span class="tag">[PASS]</span><span class="name">Code review</span><span class="meta">fresh context</span></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="credit">TeamPulse : AI-native, spec-driven development walkthrough</footer>
+
+<script>
+const STAGES = [
+  {
+    id: "scaffolding",
+    label: "Scaffolding",
+    title: "Scaffolding the project",
+    dek: "The repo, environment, CI, and agent instructions, set up before any feature work starts.",
+    clips: [
+      { file: "clip-01.mp4", label: "Repo scaffold walkthrough", duration: "3:35" },
+      { file: "clip-02.mp4", label: "Local environment & tooling setup", duration: "8:57" },
+    ],
+    points: [
+      "Next.js App Router, TypeScript, Tailwind: the baseline.",
+      "Postgres via Docker, with a documented one-command local setup.",
+      "CI skeleton in place before the first feature.",
+      "Definition of Done declared up front in <code>AGENTS.md</code>.",
+    ],
+  },
+  {
+    id: "brief",
+    label: "Product Brief",
+    title: "Product brief",
+    dek: "The problem, the solution, and what's explicitly out of scope, before anything is designed or built.",
+    clips: [
+      { file: "clip-03.mp4", label: "Drafting the TeamPulse product brief", duration: "1:57" },
+    ],
+    points: [
+      "Problem: ideas get lost in Slack threads with no visible home.",
+      "Solution: submit, browse, upvote, track status.",
+      "A specific success bar, not a vague goal.",
+      "Open gaps flagged, not silently assumed.",
+    ],
+  },
+  {
+    id: "prd",
+    label: "PRD",
+    title: "PRD",
+    dek: "The brief becomes numbered, testable requirements: what engineering actually builds against.",
+    clips: [
+      { file: "clip-04.mp4", label: "Building the PRD from the brief", duration: "17:08" },
+    ],
+    points: [
+      "Five functional requirements, each with testable consequences.",
+      "Explicit non-goals: no Slack, no notifications, no SSO in v1.",
+      "Success metrics defined, including a counter-metric.",
+    ],
+  },
+  {
+    id: "ux",
+    label: "UX Design",
+    title: "UX design",
+    dek: "A design system, with tokens, components, and behavior defined, not a one-off mockup.",
+    clips: [
+      { file: "clip-05.mp4", label: "Building DESIGN.md, EXPERIENCE.md, and the .pen composition", duration: "6:30" },
+    ],
+    points: [
+      "One accent color, used only for action and selection.",
+      "Every component's states defined before any UI code.",
+      "A live, maintained design file, not a frozen screenshot.",
+      "Accessibility (WCAG 2.2 AA) written into the spec.",
+    ],
+  },
+  {
+    id: "architecture",
+    label: "Architecture",
+    title: "Architecture",
+    dek: "A short decision log: nine rules pinning down auth, mutations, and testing before code exists.",
+    clips: [
+      { file: "clip-06.mp4", label: "Writing the architecture spine and decision log", duration: "6:57" },
+    ],
+    points: [
+      "One path for every mutation, no competing patterns.",
+      "Authorization lives in one place, never just the UI.",
+      "Upvote uniqueness enforced by the database itself.",
+      "Every test runs against a real database, never a mock.",
+    ],
+  },
+  {
+    id: "stories",
+    label: "Story Breakdown",
+    title: "Story breakdown",
+    dek: "Every requirement traced into a story with acceptance criteria an agent can build and verify against.",
+    clips: [
+      { file: "clip-07.mp4", label: "Decomposing the PRD into epics and stories", duration: "11:57" },
+    ],
+    points: [
+      "Given/When/Then acceptance criteria, traced to a requirement.",
+      "A real spec conflict caught and resolved here, on record.",
+    ],
+  },
+  {
+    id: "sprint",
+    label: "Sprint Planning",
+    title: "Sprint planning",
+    dek: "The backlog becomes a tracked sprint: visible progress, story by story.",
+    clips: [
+      { file: "clip-08.mp4", label: "Generating and validating the sprint plan", duration: "13:04" },
+    ],
+    points: [
+      "Every story moves through explicit, visible states.",
+      "Scoped narrowly on purpose, not \"build everything at once.\"",
+    ],
+  },
+  {
+    id: "build",
+    label: "Build & Test",
+    title: "Build, test, verify",
+    dek: "Implementation, gated the same way every time: lint, build, tests, review.",
+    clips: [
+      { file: "clip-09.mp4", label: "Implementing, testing, and reviewing a story end to end", duration: "43:15" },
+    ],
+    points: [
+      "Unit and end-to-end tests before a story counts as done.",
+      "A fresh-context code review on every story.",
+      "Example: employee login, built and verified this way.",
+    ],
+  },
+];
+
+const stepperEl = document.getElementById("stepper");
+const sidebarEl = document.getElementById("sidebar");
+const playerEl = document.getElementById("player");
+const numEl = document.getElementById("chapter-num");
+const titleEl = document.getElementById("chapter-title");
+const durEl = document.getElementById("chapter-dur");
+const dekEl = document.getElementById("chapter-dek");
+const pointsEl = document.getElementById("points");
+const statusStageEl = document.getElementById("status-stage");
+const statusClipEl = document.getElementById("status-clip");
+
+function pad(n) { return String(n).padStart(2, "0"); }
+
+function buildStepper() {
+  stepperEl.innerHTML = STAGES.map((s, i) => `
+    <button class="step" data-stage="${s.id}" type="button">
+      <div class="step-num">${pad(i + 1)}</div>
+      <div class="step-label">${s.label}</div>
+    </button>
+  `).join("");
+}
+
+function buildSidebar() {
+  sidebarEl.insertAdjacentHTML("beforeend", STAGES.map((s, i) => `
+    <div class="stage-group" data-stage-group="${s.id}">
+      <div class="stage-heading"><span class="idx">${pad(i + 1)}</span>${s.label}</div>
+      ${s.clips.map(c => `
+        <button class="clip-btn" data-stage="${s.id}" data-file="${c.file}" type="button">
+          <span class="clip-text">${c.label}</span>
+          <span class="clip-dur">${c.duration}</span>
+        </button>
+      `).join("")}
+    </div>
+  `).join(""));
+}
+
+function selectStage(stageId, file, autoplay) {
+  const stage = STAGES.find(s => s.id === stageId);
+  if (!stage) return;
+  const clip = stage.clips.find(c => c.file === file) || stage.clips[0];
+
+  playerEl.setAttribute("src", "assets/videos/" + clip.file);
+  playerEl.load();
+  if (autoplay) playerEl.play().catch(() => {});
+
+  const idx = STAGES.indexOf(stage) + 1;
+  numEl.textContent = pad(idx);
+  titleEl.textContent = stage.clips.length > 1 ? clip.label : stage.title;
+  durEl.textContent = clip.duration;
+  dekEl.textContent = stage.dek;
+  pointsEl.innerHTML = stage.points.map(p => `<li>${p}</li>`).join("");
+  statusStageEl.textContent = `${pad(idx)} of ${pad(STAGES.length)}`;
+  statusClipEl.textContent = clip.file;
+
+  document.querySelectorAll(".step").forEach(el => el.classList.toggle("active", el.dataset.stage === stageId));
+  document.querySelectorAll(".clip-btn").forEach(el => el.classList.toggle("active", el.dataset.file === clip.file));
+
+  const url = new URL(window.location);
+  url.searchParams.set("stage", stageId);
+  window.history.replaceState({}, "", url);
+}
+
+function initialStage() {
+  const requested = new URL(window.location).searchParams.get("stage");
+  return STAGES.some(s => s.id === requested) ? requested : STAGES[0].id;
+}
+
+buildStepper();
+buildSidebar();
+
+stepperEl.addEventListener("click", (e) => {
+  const step = e.target.closest(".step");
+  if (step) selectStage(step.dataset.stage, null, false);
+});
+
+sidebarEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".clip-btn");
+  if (btn) selectStage(btn.dataset.stage, btn.dataset.file, true);
+});
+
+selectStage(initialStage(), null, false);
+
+if ("IntersectionObserver" in window) {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("in");
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+} else {
+  document.querySelectorAll(".reveal").forEach(el => el.classList.add("in"));
+}
+</script>
+</body>
+</html>

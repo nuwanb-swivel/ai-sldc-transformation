@@ -16,7 +16,12 @@
   --text-inverse: #ffffff;
   --text-dark-secondary: #a6abb8;
   --bg-page: #ffffff;
+  --bg-muted: #f1f2f5;
   --border-default: #dadce2;
+  --border-strong: #c3c6ce;
+  --text-disabled: #b5b8c0;
+  --error: #d94a4a;
+  --error-bg: #fdeeee;
   --error-dark: #ff7a7a;
   --error-bg-dark: #3a1e20;
   --focus-ring: 0 0 0 3px rgba(91, 92, 246, 0.2);
@@ -37,7 +42,12 @@
   --color-text-inverse: var(--text-inverse);
   --color-text-dark-secondary: var(--text-dark-secondary);
   --color-bg-page: var(--bg-page);
+  --color-bg-muted: var(--bg-muted);
   --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-text-disabled: var(--text-disabled);
+  --color-error: var(--error);
+  --color-error-bg: var(--error-bg);
   --color-error-dark: var(--error-dark);
   --color-error-bg-dark: var(--error-bg-dark);
 }

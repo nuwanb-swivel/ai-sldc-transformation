@@ -12,6 +12,13 @@ import {
 
 export const role = pgEnum("role", ["employee", "admin"]);
 
+export const ideaStatus = pgEnum("idea_status", [
+  "new",
+  "under_review",
+  "planned",
+  "done",
+]);
+
 // `user` is extended for Better Auth (credentials + `username` plugin),
 // generated via `npx @better-auth/cli generate` against `src/lib/auth/index.ts`
 // and hand-merged to keep `id` a UUID v4 (see `advanced.database.generateId`
@@ -116,9 +123,37 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
+// Story 2.1: Submit an Idea. `upvote_count` is deliberately not a column
+// here -- Epic 2 context specifies it's always derived via `COUNT` against
+// the (future) `upvotes` join table, never a directly-incremented column.
+export const idea = pgTable(
+  "idea",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    status: ideaStatus("status").notNull().default("new"),
+    submitterId: uuid("submitter_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("idea_submitter_id_idx").on(table.submitterId)],
+);
+
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  ideas: many(idea),
+}));
+
+export const ideaRelations = relations(idea, ({ one }) => ({
+  submitter: one(user, {
+    fields: [idea.submitterId],
+    references: [user.id],
+  }),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

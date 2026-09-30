@@ -10,3 +10,9 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-2-employee-authenticates-and-reaches-the-app.md`
   summary: Percy UI verification for the login/loading `percySnapshot()` calls is not yet gating CI — confirm visually once the `PERCY_TOKEN` repo secret is added.
   evidence: Per `AGENTS.md`, `PERCY_TOKEN` is still pending human setup; without it Percy no-ops instead of failing the build, so the "UI verification" leg of the Definition of Done for this story hasn't actually run yet.
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-1-submit-an-idea.md`
+  summary: Add Playwright touch-emulation coverage for the Add Idea overlay's swipe-down-to-dismiss gesture.
+  evidence: The grabber's `onTouchStart`/`onTouchMove` handlers have no automated test; exercising them needs a Playwright context with `hasTouch: true`, not currently configured, and the affordance has working alternatives today (outside-tap, close button, Esc), so it isn't blocking.
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-1-submit-an-idea.md`
+  summary: Give the app's color tokens a real dark-mode pass (most tokens, including the ones this story added, have no dark counterpart).
+  evidence: No `prefers-color-scheme` query or `dark:` usage exists anywhere in the app yet — dark mode was never wired up, so this predates and extends beyond this story; worth a dedicated pass once dark mode is actually built.
